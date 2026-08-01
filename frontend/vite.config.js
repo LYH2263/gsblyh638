@@ -7,4 +7,12 @@ export default defineConfig({
     vue(),
     WindiCSS(),
   ],
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+    },
+  },
 })

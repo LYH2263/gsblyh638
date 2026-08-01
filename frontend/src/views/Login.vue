@@ -91,7 +91,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
+import { login } from '../api/user'
 import Modal from './Modal.vue'
 
 const router = useRouter()
@@ -102,17 +102,13 @@ const modalMessage = ref('')
 
 const handleLogin = async () => {
   try {
-    const response = await axios.post('/api/users/login', {
-      username: username.value,
-      password: password.value
-    })
-    
-    if (response.data) {
-      localStorage.setItem('user', JSON.stringify(response.data))
+    const data = await login(username.value, password.value)
+    if (data) {
+      localStorage.setItem('user', JSON.stringify(data))
       router.push('/home')
     }
   } catch (error) {
-    modalMessage.value = error.response?.data?.message || error.message || '登录发生错误'
+    modalMessage.value = error.message || '登录发生错误'
     showModal.value = true
   }
 }
