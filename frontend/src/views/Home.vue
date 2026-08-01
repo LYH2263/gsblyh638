@@ -46,24 +46,24 @@
       <!-- Stats Grid -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
          <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition">
-            <div class="text-gray-500 text-sm font-medium mb-1">本周学习时长</div>
-            <div class="text-3xl font-bold text-gray-900">12.5 <span class="text-base font-normal text-gray-500">小时</span></div>
-            <div class="mt-2 text-green-500 text-sm font-medium flex items-center">
-               <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
-               比上周增长 15%
-            </div>
+            <div class="text-gray-500 text-sm font-medium mb-1">总学习分钟</div>
+            <div class="text-3xl font-bold text-gray-900">{{ summary.totalStudyMinutes || 0 }} <span class="text-base font-normal text-gray-500">分钟</span></div>
+            <div class="mt-2 text-green-500 text-sm font-medium">{{ (summary.totalStudyMinutes || 0) >= 60 ? '约合 ' + formatMinutes(summary.totalStudyMinutes) : '学习行为真实累加' }}</div>
          </div>
          <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition">
-            <div class="text-gray-500 text-sm font-medium mb-1">完成课程</div>
-            <div class="text-3xl font-bold text-gray-900">8 <span class="text-base font-normal text-gray-500">个模块</span></div>
-            <div class="mt-2 text-indigo-500 text-sm font-medium">Java, Vue, Algo</div>
+            <div class="text-gray-500 text-sm font-medium mb-1">完成路径</div>
+            <div class="text-3xl font-bold text-gray-900">{{ summary.completedPathCount }} <span class="text-base font-normal text-gray-500">条</span></div>
+            <div class="mt-2 text-indigo-500 text-sm font-medium">学习中 {{ summary.inProgressPathCount }} 条</div>
          </div>
          <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition">
-             <div class="text-gray-500 text-sm font-medium mb-1">当前技能评分</div>
-             <div class="text-3xl font-bold text-gray-900">Level 4</div>
-             <div class="w-full bg-gray-200 rounded-full h-2.5 mt-3">
-               <div class="bg-indigo-600 h-2.5 rounded-full" style="width: 70%"></div>
-             </div>
+             <div class="text-gray-500 text-sm font-medium mb-1">最薄弱路径 Top3</div>
+             <ul v-if="summary.weakestPaths && summary.weakestPaths.length" class="mt-2 space-y-1">
+                <li v-for="item in summary.weakestPaths" :key="item.pathId" class="flex justify-between items-center text-sm">
+                   <span class="text-gray-700 truncate mr-2">{{ item.title }}</span>
+                   <span class="text-red-500 font-medium whitespace-nowrap">掌握度 {{ item.masteryScore }}</span>
+                </li>
+             </ul>
+             <p v-else class="text-sm text-gray-400 mt-2">暂无数据</p>
          </div>
       </div>
 
@@ -77,42 +77,37 @@
               推荐学习路径
            </h3>
            
-           <!-- Course Card -->
-           <div @click="showFeatureUnderDevelopment" class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col sm:flex-row gap-6 hover:shadow-lg transition duration-300 transform hover:-translate-y-0.5 cursor-pointer group">
-              <div class="w-full sm:w-48 h-32 bg-gray-200 rounded-lg flex-shrink-0 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1587620962725-abab7fe55159?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60');"></div>
-              <div class="flex-1">
-                 <div class="flex justify-between items-start">
-                    <h4 class="text-lg font-bold text-gray-900 group-hover:text-indigo-600 transition">Spring Boot 微服务架构实战</h4>
-                    <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-medium">匹配度 98%</span>
-                 </div>
-                 <p class="text-gray-500 text-sm mt-2 line-clamp-2">
-                    深入理解微服务核心概念，掌握 Spring Cloud Alibaba 生态，从零构建高可用分布式系统。
-                 </p>
-                 <div class="mt-4 flex items-center justify-between">
-                    <div class="flex items-center space-x-4 text-sm text-gray-500">
-                       <span class="flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> 24 课时</span>
-                       <span class="flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg> 1.2k 学员</span>
-                    </div>
-                 </div>
-              </div>
+           <div v-if="loading" class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 text-center text-gray-400">
+              推荐加载中...
+           </div>
+           <div v-else-if="!recommendations.length" class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 text-center text-gray-400">
+              恭喜，所有学习路径均已完成！
            </div>
 
-           <div @click="showFeatureUnderDevelopment" class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col sm:flex-row gap-6 hover:shadow-lg transition duration-300 transform hover:-translate-y-0.5 cursor-pointer group">
-              <div class="w-full sm:w-48 h-32 bg-gray-200 rounded-lg flex-shrink-0 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1555099962-4199c345e5dd?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60');"></div>
-              <div class="flex-1">
-                 <div class="flex justify-between items-start">
-                    <h4 class="text-lg font-bold text-gray-900 group-hover:text-indigo-600 transition">Vue 3 + Vite 前端工程化</h4>
-                    <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full font-medium">匹配度 92%</span>
+           <!-- Recommendation Card -->
+           <div v-for="path in recommendations" :key="path.pathId" class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col gap-4 hover:shadow-lg transition duration-300 transform hover:-translate-y-0.5 group">
+              <div class="flex justify-between items-start">
+                 <div>
+                    <h4 class="text-lg font-bold text-gray-900 group-hover:text-indigo-600 transition">{{ path.title }}</h4>
+                    <span class="text-xs text-gray-400">{{ path.pathCode }}</span>
                  </div>
-                 <p class="text-gray-500 text-sm mt-2 line-clamp-2">
-                    掌握 Composition API，Pinia 状态管理，以及 Vite 构建优化。
-                 </p>
-                 <div class="mt-4 flex items-center justify-between">
-                    <div class="flex items-center space-x-4 text-sm text-gray-500">
-                       <span class="flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> 18 课时</span>
-                       <span class="flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg> 850 学员</span>
-                    </div>
+                 <span class="bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full font-medium whitespace-nowrap ml-3">{{ path.matchHint }}</span>
+              </div>
+              <p class="text-gray-500 text-sm line-clamp-2">{{ path.summary }}</p>
+              <div class="space-y-2">
+                 <div class="flex justify-between text-xs text-gray-500">
+                    <span>掌握度 {{ path.masteryScore }}/100</span>
+                    <span>进度 {{ path.progress }}%</span>
+                    <span>累计学习 {{ path.totalStudyMinutes }} 分钟</span>
                  </div>
+                 <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div class="bg-indigo-600 h-2 rounded-full" :style="{ width: path.progress + '%' }"></div>
+                 </div>
+              </div>
+              <div class="flex justify-end">
+                 <button @click="openRecordModal(path)" class="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none shadow-sm transition duration-200">
+                    记录学习
+                 </button>
               </div>
            </div>
         </div>
@@ -141,36 +136,6 @@
               </div>
            </div>
 
-           <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-              <h3 class="font-bold text-gray-900 mb-4">学习动态</h3>
-              <ul class="space-y-4">
-                 <li class="flex items-start">
-                    <div class="flex-shrink-0 h-2 w-2 mt-2 bg-green-500 rounded-full"></div>
-                    <div class="ml-4">
-                       <p class="text-sm font-medium text-gray-900">完成了 "React 基础" 测验</p>
-                       <p class="text-xs text-gray-500 mt-0.5">2 小时前</p>
-                    </div>
-                 </li>
-                 <li class="flex items-start">
-                    <div class="flex-shrink-0 h-2 w-2 mt-2 bg-blue-500 rounded-full"></div>
-                    <div class="ml-4">
-                       <p class="text-sm font-medium text-gray-900">开始学习 "TypeScript 高级类型"</p>
-                       <p class="text-xs text-gray-500 mt-0.5">昨天</p>
-                    </div>
-                 </li>
-                 <li class="flex items-start">
-                    <div class="flex-shrink-0 h-2 w-2 mt-2 bg-purple-500 rounded-full"></div>
-                    <div class="ml-4">
-                       <p class="text-sm font-medium text-gray-900">更新了 学习目标</p>
-                       <p class="text-xs text-gray-500 mt-0.5">3 天前</p>
-                    </div>
-                 </li>
-              </ul>
-           </div>
-
-
-
-          
         </div>
       </div>
 
@@ -204,6 +169,34 @@
         </button>
       </template>
     </Modal>
+    <!-- Record Study Modal -->
+    <Modal :show="showRecordModal" @close="showRecordModal = false">
+      <template #title>记录学习</template>
+      <template #body>
+        <p v-if="currentPath" class="text-sm text-gray-500 mb-4">{{ currentPath.title }}（{{ currentPath.pathCode }}）</p>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">本次学习时长（分钟，正整数）</label>
+            <input v-model="studyDuration" type="number" min="1" step="1" placeholder="例如 30"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">当前掌握度（0-100 整数）</label>
+            <input v-model="masteryScore" type="number" min="0" max="100" step="1" placeholder="例如 60"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+          <p v-if="recordError" class="text-sm text-red-600">{{ recordError }}</p>
+        </div>
+      </template>
+      <template #footer>
+        <button @click="showRecordModal = false" class="mr-3 px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none transition duration-200">
+          取消
+        </button>
+        <button @click="submitRecord" :disabled="submitting" class="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none shadow-sm transition duration-200 disabled:opacity-50">
+          {{ submitting ? '提交中...' : '提交' }}
+        </button>
+      </template>
+    </Modal>
   </div>
 </template>
 
@@ -211,21 +204,110 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Modal from './Modal.vue'
+import { getRecommendations, reportBehavior, getAnalyticsSummary } from '../api/learning'
 
 const router = useRouter()
 const user = ref({})
+const recommendations = ref([])
+const summary = ref({ totalStudyMinutes: 0, completedPathCount: 0, inProgressPathCount: 0, weakestPaths: [] })
+const loading = ref(false)
 const showDeleteModal = ref(false)
 const showInfoModal = ref(false)
 const infoMessage = ref('')
+const showRecordModal = ref(false)
+const currentPath = ref(null)
+const studyDuration = ref('')
+const masteryScore = ref('')
+const recordError = ref('')
+const submitting = ref(false)
 
 onMounted(() => {
   const userData = localStorage.getItem('user')
   if (userData) {
     user.value = JSON.parse(userData)
+    loadLearningData()
   } else {
     router.push('/login')
   }
 })
+
+// 推荐列表与分析汇总：排序/过滤规则（薄弱优先升序、过滤 progress>=100）由后端按 GAMMA 保证
+const loadLearningData = async () => {
+  loading.value = true
+  try {
+    const [recRes, sumRes] = await Promise.all([
+      getRecommendations(user.value.id),
+      getAnalyticsSummary(user.value.id)
+    ])
+    if (recRes.code === 0) {
+      recommendations.value = recRes.data
+    } else {
+      infoMessage.value = recRes.message || '推荐列表加载失败'
+      showInfoModal.value = true
+    }
+    if (sumRes.code === 0) {
+      summary.value = sumRes.data
+    }
+  } catch (error) {
+    infoMessage.value = '学习数据加载失败，请稍后重试'
+    showInfoModal.value = true
+  } finally {
+    loading.value = false
+  }
+}
+
+// 接口与存储均为分钟正整数，展示层可换算为小时
+const formatMinutes = (minutes) => {
+  const value = minutes || 0
+  if (value < 60) return `${value} 分钟`
+  const hours = Math.floor(value / 60)
+  const rest = value % 60
+  return rest === 0 ? `${hours} 小时` : `${hours} 小时 ${rest} 分钟`
+}
+
+const openRecordModal = (path) => {
+  currentPath.value = path
+  studyDuration.value = ''
+  masteryScore.value = ''
+  recordError.value = ''
+  showRecordModal.value = true
+}
+
+const submitRecord = async () => {
+  const duration = Number(studyDuration.value)
+  const mastery = Number(masteryScore.value)
+  // 与 GAMMA 8.1 一致的前端预校验：分钟正整数（≥1）、掌握度 0-100 整数；错误在弹窗内内联展示
+  if (!Number.isInteger(duration) || duration < 1) {
+    recordError.value = '学习时长必须为分钟正整数（≥1）'
+    return
+  }
+  if (!Number.isInteger(mastery) || mastery < 0 || mastery > 100) {
+    recordError.value = '掌握度必须为 0-100 的整数'
+    return
+  }
+  recordError.value = ''
+  submitting.value = true
+  try {
+    const res = await reportBehavior({
+      userId: user.value.id,
+      pathId: currentPath.value.pathId,
+      studyDuration: duration,
+      masteryScore: mastery
+    })
+    if (res.code === 0) {
+      showRecordModal.value = false
+      infoMessage.value = `已记录「${currentPath.value.title}」，当前进度 ${res.data.progress}%`
+      showInfoModal.value = true
+      await loadLearningData()
+    } else {
+      recordError.value = res.message || '记录失败'
+    }
+  } catch (error) {
+    recordError.value = error.response?.data?.message || '记录失败，请稍后重试'
+  } finally {
+    submitting.value = false
+  }
+}
 
 const logout = () => {
     localStorage.removeItem('user')
@@ -236,10 +318,5 @@ const confirmDelete = () => {
   // In a real app, this would call an API
   showDeleteModal.value = false
   showInfoModal.value = true
-}
-
-const showFeatureUnderDevelopment = () => {
-    infoMessage.value = '该功能正在开发中，敬请期待！'
-    showInfoModal.value = true
 }
 </script>
