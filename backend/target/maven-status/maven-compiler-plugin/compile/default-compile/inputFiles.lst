@@ -1,0 +1,11 @@
+/Users/yuwangi/Documents/www/test/longmao/638/backend/src/main/java/com/example/adaptivelearning/exception/GlobalExceptionHandler.java
+/Users/yuwangi/Documents/www/test/longmao/638/backend/src/main/java/com/example/adaptivelearning/controller/UserController.java
+/Users/yuwangi/Documents/www/test/longmao/638/backend/src/main/java/com/example/adaptivelearning/AdaptiveLearningApplication.java
+/Users/yuwangi/Documents/www/test/longmao/638/backend/src/main/java/com/example/adaptivelearning/exception/BusinessException.java
+/Users/yuwangi/Documents/www/test/longmao/638/backend/src/main/java/com/example/adaptivelearning/dto/RegisterRequest.java
+/Users/yuwangi/Documents/www/test/longmao/638/backend/src/main/java/com/example/adaptivelearning/model/User.java
+/Users/yuwangi/Documents/www/test/longmao/638/backend/src/main/java/com/example/adaptivelearning/repository/UserRepository.java
+/Users/yuwangi/Documents/www/test/longmao/638/backend/src/main/java/com/example/adaptivelearning/config/WebConfig.java
+/Users/yuwangi/Documents/www/test/longmao/638/backend/src/main/java/com/example/adaptivelearning/exception/UnauthorizedException.java
+/Users/yuwangi/Documents/www/test/longmao/638/backend/src/main/java/com/example/adaptivelearning/dto/LoginRequest.java
+/Users/yuwangi/Documents/www/test/longmao/638/backend/src/main/java/com/example/adaptivelearning/service/UserService.java
