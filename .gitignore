@@ -1,2 +1,25 @@
+# 题目与对话
 题目.md
 对话/
+
+# Backend (Maven)
+backend/target/
+*.class
+*.jar
+*.war
+*.log
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# IDE / OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+.env.local
