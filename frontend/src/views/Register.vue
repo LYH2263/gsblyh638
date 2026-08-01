@@ -80,7 +80,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
+import { register } from '../api/user'
 import Modal from './Modal.vue'
 
 const router = useRouter()
@@ -118,7 +118,7 @@ const handleRegister = async () => {
     }
 
   try {
-    const response = await axios.post('/api/users/register', {
+    await register({
       username: username.value,
       email: email.value,
       password: password.value,
@@ -126,12 +126,9 @@ const handleRegister = async () => {
       bio: bio.value,
       learningGoals: learningGoals.value
     })
-    
-    if (response.status === 200) {
-      showNotification('注册成功', '您的账号已创建成功，请登录。', true)
-    }
+    showNotification('注册成功', '您的账号已创建成功，请登录。', true)
   } catch (error) {
-    showNotification('注册失败', error.response?.data?.message || error.message || '注册发生错误')
+    showNotification('注册失败', error.message || '注册发生错误')
   }
 }
 </script>
