@@ -80,7 +80,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
+import { register } from '../api/user'
 import Modal from './Modal.vue'
 
 const router = useRouter()
@@ -118,7 +118,7 @@ const handleRegister = async () => {
     }
 
   try {
-    const response = await axios.post('/api/users/register', {
+    const response = await register({
       username: username.value,
       email: email.value,
       password: password.value,

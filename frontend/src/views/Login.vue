@@ -91,7 +91,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
+import { login } from '../api/user'
 import Modal from './Modal.vue'
 
 const router = useRouter()
@@ -102,7 +102,7 @@ const modalMessage = ref('')
 
 const handleLogin = async () => {
   try {
-    const response = await axios.post('/api/users/login', {
+    const response = await login({
       username: username.value,
       password: password.value
     })
